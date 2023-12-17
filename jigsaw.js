@@ -41,6 +41,19 @@ let currTile;
 let otherTile;
 let dragCount = 0;
 
+function areAdjacent(element1, element2) {
+  const rect1 = element1.getBoundingClientRect();
+  const rect2 = element2.getBoundingClientRect();
+
+  // Check if the elements are vertically or horizontally adjacent
+  return (
+    (Math.abs(rect1.top - rect2.bottom) < 2 && Math.abs(rect1.left - rect2.left) < 2) ||
+    (Math.abs(rect1.bottom - rect2.top) < 2 && Math.abs(rect1.left - rect2.left) < 2) ||
+    (Math.abs(rect1.left - rect2.right) < 2 && Math.abs(rect1.top - rect2.top) < 2) ||
+    (Math.abs(rect1.right - rect2.left) < 2 && Math.abs(rect1.top - rect2.top) < 2)
+  );
+}
+
 draggables.forEach((box) => {
   box.addEventListener("dragstart", function () {
     currTile = this;
@@ -63,13 +76,9 @@ draggables.forEach((box) => {
   box.addEventListener("drop", function () {
     otherTile = this;
     this.classList.remove("dragover");
-  });
 
-  box.addEventListener("dragend", function () {
-    this.classList.remove("dragging");
-    dragCount = dragCount + 1;
-
-    if (currTile && otherTile && currTile !== otherTile) {
+    // Check if the tiles are adjacent before allowing the drop
+    if (currTile && otherTile && currTile !== otherTile && areAdjacent(currTile, otherTile)) {
       const currIndex = Array.from(draggables).indexOf(currTile);
       const otherIndex = Array.from(draggables).indexOf(otherTile);
 
@@ -82,6 +91,13 @@ draggables.forEach((box) => {
       }
     }
   });
+
+
+
+  box.addEventListener("dragend", function () {
+    this.classList.remove("dragging");
+    dragCount = dragCount + 1;
+  });
 });
 
 function submit() {
@@ -93,16 +109,28 @@ function submit() {
       cnt = cnt + 1;
     }
   }
+
   if (cnt == 9) {
     alert("You have completed the puzzle successfully :)");
+    // Retrieve the stored user name and drag count
+    const userName = localStorage.getItem("userName");
+    const storedDragCount = localStorage.getItem("dragCount");
+    console.log(`User: ${userName}, Drag Count: ${storedDragCount}`);
   } else {
-    console.log();
     alert("The puzzle is not completed successfully :(");
   }
-
 }
+
 function start() {
+  // Use prompt to ask for the user's name
   let name = prompt("Enter your name");
-  localStorage.setItem("name", "dragCount");
-  console.log(localStorage.getItem("name", "dragCount"));
+
+  // Check if the user entered a name
+  if (name !== null && name !== "") {
+    // Store the user's name in local storage
+    localStorage.setItem("userName", name);
+    console.log(`User: ${name}`);
+  } else {
+    console.log("User did not enter a name.");
+  }
 }
